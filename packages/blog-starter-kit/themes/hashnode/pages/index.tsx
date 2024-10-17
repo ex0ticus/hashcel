@@ -93,7 +93,6 @@ export default function Index(
 		<AppProvider publication={publication}>
 			<Layout>
 				<Head>
-					<p>hello world</p>
 					<title>
 						{publication.displayTitle || publication.title || 'Hashnode Blog Starter Kit'}
 					</title>
