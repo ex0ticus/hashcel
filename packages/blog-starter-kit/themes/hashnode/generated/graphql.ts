@@ -1316,6 +1316,13 @@ export type DocsCustomPageConnection = PageConnection & {
   totalDocuments: Scalars['Int']['output'];
 };
 
+export enum DocsGitHubActivityDeploymentType {
+  /** The deployment is a preview deployment. */
+  Preview = 'PREVIEW',
+  /** The deployment is a production deployment. */
+  Production = 'PRODUCTION'
+}
+
 export type DocsProjectInvitedMembers = {
   __typename?: 'DocsProjectInvitedMembers';
   email: Scalars['String']['output'];
@@ -1379,11 +1386,20 @@ export type DocumentationGuide = IGuide & {
   name: Scalars['String']['output'];
   /** OG meta-data of the page. Contains image url used in open graph meta tags. */
   ogMetaData?: Maybe<OpenGraphMetaData>;
+  /** Page of any version of this guide. */
   page?: Maybe<DocumentationPage>;
   provider: GuideProvider;
+  /** Only published page of any version of this guide. */
   publishedPage?: Maybe<DocumentationPage>;
   /** Only published sidebar items of the default version of this guide. */
   publishedSidebarItems: Array<DocumentationSidebarItem>;
+  /**
+   * Only published page of any version of this guide. The path may include the version slug.
+   *
+   * Takes redirects into account and may return the page that the requested page redirects to.
+   *
+   * If the path is only a version slug, it will redirect to the first page of that version.
+   */
   redirectedPublishedPage?: Maybe<DocumentationPage>;
   /** SEO information of the page. Contains title and description used in meta tags. */
   seo?: Maybe<Seo>;
@@ -1425,6 +1441,14 @@ export enum DocumentationGuideItemStatus {
   Deleted = 'DELETED',
   Published = 'PUBLISHED',
   Unpublished = 'UNPUBLISHED'
+}
+
+/** Visibility options for documentation guides. */
+export enum DocumentationGuideVisibility {
+  /** Not visible in public listings. Only visible to users with access to the project. */
+  Hidden = 'HIDDEN',
+  /** Visible to all users. */
+  Public = 'PUBLIC'
 }
 
 export type DocumentationLink = IDocumentationSidebarItem & {
@@ -1728,6 +1752,8 @@ export type DocumentationProjectFeatures = {
   collaboration: CollaborationFeature;
   /** GitHub sync feature for the docs project which enables syncing the docs project with a GitHub repository. */
   ghSync: GitHubSyncFeature;
+  /** Versioning feature for the docs project which enables creating different versions of docs guides. */
+  versioning: VersioningFeature;
 };
 
 export type DocumentationProjectGetStarted = {
@@ -2366,6 +2392,8 @@ export type GitHubActivityLog = Node & {
   branchName: Scalars['String']['output'];
   /** The date the log was created. */
   createdAt: Scalars['DateTime']['output'];
+  /** The deployment type related to the log. */
+  deploymentType: DocsGitHubActivityDeploymentType;
   /** The commit ID. */
   gitCommitId: Scalars['String']['output'];
   /** The commit message. */
@@ -2764,6 +2792,12 @@ export enum GuideProvider {
   Hashnode = 'HASHNODE'
 }
 
+export enum GuideVersionStatus {
+  Deprecated = 'DEPRECATED',
+  Stable = 'STABLE',
+  Unstable = 'UNSTABLE'
+}
+
 export type HeadlessCmsFeature = Feature & {
   __typename?: 'HeadlessCMSFeature';
   /** A flag indicating if the Headless CMS feature is enabled or not. */
@@ -2808,6 +2842,33 @@ export type IGuide = {
   status: DocumentationGuideItemStatus;
   /** The ID of the default version. */
   versionId?: Maybe<Scalars['String']['output']>;
+};
+
+export type IGuideVersion = {
+  /** Internal code name for the version. */
+  codeName?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of when the version was created. */
+  createdAt: Scalars['DateTime']['output'];
+  /** The version that this version was forked from. */
+  forkedFrom?: Maybe<IGuideVersion>;
+  /** Unique identifier for the guide version. */
+  id: Scalars['ID']['output'];
+  /**
+   * Indicates if this is the default version.
+   *
+   * There is always exactly one default version at a given time.
+   */
+  isDefault: Scalars['Boolean']['output'];
+  /** Display name of the version. */
+  name: Scalars['String']['output'];
+  /** URL-friendly identifier for the version. */
+  slug: Scalars['String']['output'];
+  /** Status of the guide version. */
+  status: GuideVersionStatus;
+  /** Timestamp of the last update to the version. */
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  /** Visibility of the guide version. */
+  visibility: DocumentationGuideVisibility;
 };
 
 /**
@@ -6890,6 +6951,13 @@ export type VerifyDocumentationProjectCustomDomainPayload = {
    * Note, that the verification can also fail.
    */
   project?: Maybe<DocumentationProject>;
+};
+
+/** Contains the flag indicating if the Versioning feature is enabled or not. */
+export type VersioningFeature = Feature & {
+  __typename?: 'VersioningFeature';
+  /** A flag indicating if the Versioning feature is enabled or not. */
+  isEnabled: Scalars['Boolean']['output'];
 };
 
 /**

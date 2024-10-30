@@ -1311,6 +1311,13 @@ type DocsCustomPageConnection implements PageConnection {
   totalDocuments: Int!
 }
 
+enum DocsGitHubActivityDeploymentType {
+  """The deployment is a preview deployment."""
+  PREVIEW
+  """The deployment is a production deployment."""
+  PRODUCTION
+}
+
 type DocsProjectInvitedMembers {
   email: String!
   role: DocumentationMemberRole!
@@ -1383,11 +1390,20 @@ type DocumentationGuide implements IGuide {
   OG meta-data of the page. Contains image url used in open graph meta tags.
   """
   ogMetaData: OpenGraphMetaData
+  """Page of any version of this guide."""
   page(id: ID, path: String): DocumentationPage
   provider: GuideProvider!
+  """Only published page of any version of this guide."""
   publishedPage(id: ID, path: String): DocumentationPage
   """Only published sidebar items of the default version of this guide."""
   publishedSidebarItems: [DocumentationSidebarItem!]!
+  """
+  Only published page of any version of this guide. The path may include the version slug.
+  
+  Takes redirects into account and may return the page that the requested page redirects to.
+  
+  If the path is only a version slug, it will redirect to the first page of that version.
+  """
   redirectedPublishedPage(id: ID, path: String): DocumentationPage
   """
   SEO information of the page. Contains title and description used in meta tags.
@@ -1413,6 +1429,16 @@ enum DocumentationGuideItemStatus {
   DELETED
   PUBLISHED
   UNPUBLISHED
+}
+
+"""Visibility options for documentation guides."""
+enum DocumentationGuideVisibility {
+  """
+  Not visible in public listings. Only visible to users with access to the project.
+  """
+  HIDDEN
+  """Visible to all users."""
+  PUBLIC
 }
 
 type DocumentationLink implements IDocumentationSidebarItem {
@@ -1688,6 +1714,10 @@ type DocumentationProjectFeatures {
   GitHub sync feature for the docs project which enables syncing the docs project with a GitHub repository.
   """
   ghSync: GitHubSyncFeature!
+  """
+  Versioning feature for the docs project which enables creating different versions of docs guides.
+  """
+  versioning: VersioningFeature!
 }
 
 type DocumentationProjectGetStarted {
@@ -2331,6 +2361,8 @@ type GitHubActivityLog implements Node {
   branchName: String!
   """The date the log was created."""
   createdAt: DateTime!
+  """The deployment type related to the log."""
+  deploymentType: DocsGitHubActivityDeploymentType!
   """The commit ID."""
   gitCommitId: String!
   """The commit message."""
@@ -2724,6 +2756,12 @@ enum GuideProvider {
   HASHNODE
 }
 
+enum GuideVersionStatus {
+  DEPRECATED
+  STABLE
+  UNSTABLE
+}
+
 type HeadlessCMSFeature implements Feature {
   """A flag indicating if the Headless CMS feature is enabled or not."""
   isEnabled: Boolean!
@@ -2771,6 +2809,33 @@ interface IGuide {
   status: DocumentationGuideItemStatus!
   """The ID of the default version."""
   versionId: String
+}
+
+interface IGuideVersion {
+  """Internal code name for the version."""
+  codeName: String
+  """Timestamp of when the version was created."""
+  createdAt: DateTime!
+  """The version that this version was forked from."""
+  forkedFrom: IGuideVersion
+  """Unique identifier for the guide version."""
+  id: ID!
+  """
+  Indicates if this is the default version.
+  
+  There is always exactly one default version at a given time.
+  """
+  isDefault: Boolean!
+  """Display name of the version."""
+  name: String!
+  """URL-friendly identifier for the version."""
+  slug: String!
+  """Status of the guide version."""
+  status: GuideVersionStatus!
+  """Timestamp of the last update to the version."""
+  updatedAt: DateTime
+  """Visibility of the guide version."""
+  visibility: DocumentationGuideVisibility!
 }
 
 """
@@ -6335,6 +6400,14 @@ type VerifyDocumentationProjectCustomDomainPayload {
   Note, that the verification can also fail.
   """
   project: DocumentationProject
+}
+
+"""
+Contains the flag indicating if the Versioning feature is enabled or not.
+"""
+type VersioningFeature implements Feature {
+  """A flag indicating if the Versioning feature is enabled or not."""
+  isEnabled: Boolean!
 }
 
 """
